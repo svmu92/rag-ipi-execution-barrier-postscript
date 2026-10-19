@@ -59,6 +59,10 @@ Everything else -- the six obfuscation operators, the normalisation
 defence, BM25 retrieval, the guardrail wrapper, the canary protocol -- is
 unmodified.
 
+## Kaggle notebook
+
+`kaggle_execution_barrier_postscript.ipynb` is the notebook this was actually run from, on a single Kaggle T4 (16GB): it clones this repo, applies a handful of Kaggle-environment-specific fixes that have nothing to do with the repo's own code (HF token plumbing, a JAX/vLLM fork quirk, a torchaudio import landmine), then runs Steps 5-8 below (the smoke test, data prep, the real end-to-end measurement, and the direct-feed probe) as notebook cells. Upload it to a new Kaggle notebook, or use Kaggle's "New Notebook from GitHub" import.
+
 ## Setup
 
 ```bash
