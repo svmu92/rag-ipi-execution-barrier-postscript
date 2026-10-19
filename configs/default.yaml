@@ -1,0 +1,73 @@
+# Default experiment configuration (plan section 4 step 2: "One YAML config
+# per experiment. No settings hard-coded in scripts."). Copy this file and
+# override per experiment rather than editing scripts.
+
+project:
+  seed: 0                     # master seed: query sampling, canaries, obfuscation
+  results_dir: results
+  data_dir: data
+  index_dir: indexes
+
+data:
+  dataset: nq                 # nq (primary) | hotpotqa (stretch)
+  split: test
+  n_eval_queries: 500
+  n_dev_queries: 100
+
+retrievers:
+  bm25:
+    enabled: true
+  e5:
+    enabled: true
+    model_name: intfloat/e5-base-v2
+  contriever:
+    enabled: true
+    model_name: facebook/contriever-msmarco
+  device: cuda
+
+generators:
+  - name: llama3-8b
+    model_name: meta-llama/Meta-Llama-3-8B-Instruct
+    supports_system_role: true
+  - name: mistral-7b
+    model_name: mistralai/Mistral-7B-Instruct-v0.3
+    supports_system_role: true   # confirm in the week-1 smoke test; fold_system_into_user
+                                  # is available in src/generate.py if this is wrong
+  # Should-tier / hosted-model replacement (plan section 14):
+  # - name: qwen2.5-7b
+  #   model_name: Qwen/Qwen2.5-7B-Instruct
+  #   supports_system_role: true
+
+generation:
+  max_tokens: 64
+  temperature: 0.0
+
+guardrails:
+  - name: protectai-deberta-v2
+    model_name: protectai/deberta-v3-base-prompt-injection-v2
+    malicious_label: INJECTION   # UNVERIFIED -- confirm in the smoke test, see src/guardrail.py
+  # Should-tier secondary classifier (gated):
+  # - name: promptguard2-86m
+  #   model_name: meta-llama/Llama-Prompt-Guard-2-86M
+  #   malicious_label: MALICIOUS   # confirmed against the model card
+
+attack:
+  conditions: [C1_tags, C2_zerowidth, C3_homoglyph, C4_typoglycemia, C5_base64]
+  rhos: [0.0, 0.25, 0.5, 0.75, 1.0]
+  hybrid_mechanism: null   # set after the week-2 pilot picks M* (rung R5)
+  k_values: [1, 5, 10]
+  generation_k: 5           # passages in context for P_gen / end-to-end
+  robustness_seeds: [1, 2]  # re-run rho in {0, 0.5, 1} with these too
+
+defence:
+  variants: [V0, V1, V2, V3, V4]   # V5 (base64 decode) is a stretch addition
+  placements: [after_retrieval]     # add "before_indexing" for the ablation
+
+adaptive:
+  search_budget: 50
+  sanitise_variant: V4
+
+stats:
+  bootstrap_n: 10000
+  confidence: 95.0
+  holm_alpha: 0.05

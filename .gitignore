@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Large, machine-specific, regenerable
+data/
+indexes/
+hf_cache/
+*.index
+*.npy
+*.pt
+
+# Keep results (JSONL) committed per the plan's reproducibility rules,
+# but ignore scratch/debug dumps
+results/_scratch/

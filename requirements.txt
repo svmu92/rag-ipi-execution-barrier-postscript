@@ -1,0 +1,17 @@
+# Install in this order: vllm first so it pins its own compatible torch/CUDA build.
+# Trimmed from the parent project's requirements.txt to just what this
+# repo's scripts actually import (no dense retrievers, no analysis/plotting,
+# no test runner -- this repo has no tests/ of its own).
+vllm
+transformers
+datasets
+accelerate
+huggingface_hub
+beir
+bm25s[core]
+PyStemmer
+numpy
+pyyaml
+tqdm
+regex
+confusable-homoglyphs

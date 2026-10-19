@@ -1,0 +1,54 @@
+# The scoped config this postscript measurement actually ran with on a
+# single Kaggle T4 (16GB) -- a copy of configs/default.yaml's shape with the
+# overrides needed to fit one GPU session:
+#   n_eval_queries   500 -> 30   (small enough for one session)
+#   conditions       the five single-family conditions dropped -- the
+#                    report's main sweep already shows they stay near zero
+#                    risk; only the hybrid condition (below) has non-trivial
+#                    ASR* and is worth the cost of a real generation call
+#   hybrid_mechanism null -> homoglyph (the mechanism the report's H4 found
+#                    actually escapes the retrieval-evasion trade-off)
+#   generators[0]    the full-precision Llama-3-8B-Instruct -> a public
+#                    4-bit AWQ repack (see src/generate.py's load_generator
+#                    docstring for why a T4 needs this)
+#
+# Everything else (BM25 as the sole retriever, the guardrail, rhos, the
+# canary protocol) is unchanged from configs/default.yaml.
+project:
+  seed: 0
+  results_dir: results
+  data_dir: data
+  index_dir: indexes
+
+data:
+  dataset: nq
+  split: test
+  n_eval_queries: 30
+  n_dev_queries: 10
+
+retrievers:
+  bm25:
+    enabled: true
+  device: cpu
+
+generators:
+  - name: llama3-8b-awq
+    model_name: solidrust/Meta-Llama-3-8B-Instruct-hf-AWQ
+    supports_system_role: true
+
+generation:
+  max_tokens: 64
+  temperature: 0.0
+
+guardrails:
+  - name: protectai-deberta-v2
+    model_name: protectai/deberta-v3-base-prompt-injection-v2
+    malicious_label: INJECTION
+
+attack:
+  conditions: []
+  rhos: [0.0, 0.25, 0.5, 0.75, 1.0]
+  hybrid_mechanism: homoglyph
+  k_values: [1, 5, 10]
+  generation_k: 5
+  robustness_seeds: []
